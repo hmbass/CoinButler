@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  trading-bot:
+    build: .
+    container_name: upbit-trading-bot
+    ports:
+      - "5000:5000"
+    environment:
+      - UPBIT_ACCESS_KEY=${UPBIT_ACCESS_KEY}
+      - UPBIT_SECRET_KEY=${UPBIT_SECRET_KEY}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    volumes:
+      - ./trade_history.csv:/app/trade_history.csv
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/data"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s 

@@ -1,0 +1,36 @@
+{
+  "name": "Upbit Trading Bot",
+  "description": "Automated cryptocurrency trading bot for Upbit",
+  "repository": "https://github.com/yourusername/upbit-trading-bot",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["python", "flask", "trading", "cryptocurrency", "upbit"],
+  "env": {
+    "UPBIT_ACCESS_KEY": {
+      "description": "Your Upbit API Access Key",
+      "required": true
+    },
+    "UPBIT_SECRET_KEY": {
+      "description": "Your Upbit API Secret Key",
+      "required": true
+    },
+    "TELEGRAM_TOKEN": {
+      "description": "Your Telegram Bot Token (optional)",
+      "required": false
+    },
+    "TELEGRAM_CHAT_ID": {
+      "description": "Your Telegram Chat ID (optional)",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+} 
