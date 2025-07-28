@@ -19,6 +19,8 @@ RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.pytho
 # 애플리케이션 파일 복사
 COPY upbit_auto_trading_bot_v5.py .
 COPY templates/ templates/
+COPY ip_checker.py .
+COPY start.sh .
 
 # 포트 노출
 EXPOSE 5000
@@ -27,5 +29,8 @@ EXPOSE 5000
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# 애플리케이션 실행
-CMD ["python", "upbit_auto_trading_bot_v5.py"] 
+# 시작 스크립트 실행 권한 부여
+RUN chmod +x /app/start.sh
+
+# 시작 스크립트 실행
+CMD ["/app/start.sh"] 

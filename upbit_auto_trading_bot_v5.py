@@ -129,7 +129,7 @@ def is_within_monitoring_hours():
 # === Flask 대시보드 ===
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/dashboard')
 def dashboard():
     trades = read_trade_history()
     pnl = calculate_pnl(trades)
@@ -143,8 +143,86 @@ def get_data():
     balance = get_account_balance()
     return jsonify({"trades": trades, "pnl": pnl, "balance": balance})
 
+@app.route('/health')
+def health_check():
+    """헬스체크 및 IP 정보 엔드포인트"""
+    try:
+        # 기본 상태 확인
+        health_status = {
+            'status': 'healthy',
+            'timestamp': datetime.datetime.now().isoformat(),
+            'upbit_api_configured': bool(ACCESS_KEY and SECRET_KEY),
+            'telegram_configured': bool(TELEGRAM_TOKEN and TELEGRAM_CHAT_ID),
+            'server': 'upbit-trading-bot-v5'
+        }
+        
+        # IP 정보 추가 (선택적)
+        try:
+            response = requests.get('https://api.ipify.org?format=json', timeout=5)
+            if response.status_code == 200:
+                health_status['ip'] = response.json()['ip']
+            else:
+                health_status['ip'] = 'Unknown'
+        except:
+            health_status['ip'] = 'Unknown'
+        
+        return jsonify(health_status)
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'timestamp': datetime.datetime.now().isoformat()
+        }), 500
+
+@app.route('/ip')
+def get_ip_info():
+    """현재 IP 정보 및 업비트 API 설정 안내"""
+    try:
+        # IP 정보 조회
+        response = requests.get('https://api.ipify.org?format=json', timeout=10)
+        current_ip = response.json()['ip'] if response.status_code == 200 else 'Unknown'
+        
+        # 상세 IP 정보
+        ip_info_response = requests.get(f'https://ipinfo.io/{current_ip}/json', timeout=10)
+        ip_info = ip_info_response.json() if ip_info_response.status_code == 200 else {}
+        
+        return jsonify({
+            'current_ip': current_ip,
+            'ip_info': ip_info,
+            'upbit_setup_instructions': {
+                'step1': '업비트 웹사이트 로그인',
+                'step2': '마이페이지 → API 관리',
+                'step3': f'IP 주소 등록에서 다음 IP 추가: {current_ip}',
+                'security_tips': [
+                    'API 키 권한을 최소화하세요 (필요한 권한만)',
+                    '거래 금액 제한을 설정하세요',
+                    '정기적으로 IP 변경을 모니터링하세요'
+                ]
+            },
+            'timestamp': datetime.datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'timestamp': datetime.datetime.now().isoformat()
+        }), 500
+
+@app.route('/')
+def simple_health():
+    """간단한 헬스체크 엔드포인트"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'Upbit Trading Bot v5 is running',
+        'timestamp': datetime.datetime.now().isoformat()
+    })
+
 def run_dashboard():
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    """Flask 대시보드 서버 실행"""
+    try:
+        print("🌐 Flask 서버 시작 중...")
+        app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+    except Exception as e:
+        print(f"❌ Flask 서버 시작 실패: {e}")
 
 # === 거래 로그 ===
 def log_trade(data):
@@ -314,5 +392,25 @@ def auto_trade():
 # === 스레드로 Flask + 트레이딩 병행 실행 ===
 if __name__ == "__main__":
     print("업비트 자동 거래 봇 v5 시작...")
-    threading.Thread(target=run_dashboard, daemon=True).start()
+    
+    # Flask 서버 시작 (백그라운드)
+    dashboard_thread = threading.Thread(target=run_dashboard, daemon=True)
+    dashboard_thread.start()
+    
+    # 서버 시작 대기 (헬스체크 준비)
+    print("Flask 서버 시작 중...")
+    time.sleep(10)  # 서버 시작 대기
+    
+    # 헬스체크 준비 확인
+    try:
+        response = requests.get('http://localhost:5000/health', timeout=30)
+        if response.status_code == 200:
+            print("✅ Flask 서버가 정상적으로 시작되었습니다.")
+        else:
+            print(f"⚠️ Flask 서버 응답: {response.status_code}")
+    except Exception as e:
+        print(f"⚠️ Flask 서버 연결 확인 중 오류: {e}")
+    
+    # 트레이딩 봇 시작
+    print("트레이딩 봇 시작...")
     auto_trade()

@@ -104,6 +104,25 @@ INTERVAL = 60
    - `UPBIT_SECRET_KEY`
    - `TELEGRAM_TOKEN` (선택사항)
    - `TELEGRAM_CHAT_ID` (선택사항)
+   - `ENABLE_IP_CHECK=true` (IP 모니터링 활성화)
+   - `IP_CHECK_INTERVAL=3600` (IP 체크 간격, 초 단위)
+
+#### Railway IP 설정 방법
+Railway는 동적 IP를 사용하므로 업비트 API 설정이 필요합니다:
+
+1. **배포 후 IP 확인**:
+   - Railway 대시보드에서 앱 URL 확인
+   - `https://your-app.railway.app/ip` 접속하여 현재 IP 확인
+
+2. **업비트 API 설정**:
+   - 업비트 웹사이트 로그인
+   - 마이페이지 → API 관리 → IP 주소 등록
+   - 확인된 IP 주소 추가
+
+3. **자동 IP 모니터링**:
+   - 봇이 자동으로 IP 변경을 감지
+   - 텔레그램 알림 설정 시 IP 변경 시 자동 알림
+   - 로그에서 IP 변경 내역 확인 가능
 
 ### Render 배포 (무료)
 1. [Render](https://render.com)에 가입
@@ -173,6 +192,7 @@ heroku logs --tail
 1. **API 키 오류**
    - 업비트 API 키가 올바른지 확인
    - 읽기/쓰기 권한이 있는지 확인
+   - **Railway 사용 시**: IP 화이트리스트에 현재 IP가 등록되어 있는지 확인
 
 2. **텔레그램 알림이 오지 않는 경우**
    - 봇 토큰과 채팅 ID가 올바른지 확인
@@ -182,6 +202,12 @@ heroku logs --tail
    - 모니터링 시간인지 확인
    - 계좌 잔고가 충분한지 확인
    - 일일 손실 한도에 도달하지 않았는지 확인
+
+4. **Railway IP 관련 문제**
+   - `/ip` 엔드포인트로 현재 IP 확인
+   - 업비트 API IP 화이트리스트 업데이트
+   - IP 변경 시 텔레그램 알림 확인
+   - 로그에서 IP 변경 내역 확인
 
 ### 로그 확인
 ```bash

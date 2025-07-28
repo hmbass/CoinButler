@@ -5,9 +5,9 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "python upbit_auto_trading_bot_v5.py",
-    "healthcheckPath": "/data",
-    "healthcheckTimeout": 300,
+    "startCommand": "/app/start.sh",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 600,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
